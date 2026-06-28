@@ -237,6 +237,47 @@ canvas{max-height:220px;}
 .mobile-pill.active{background:var(--accent);border-color:var(--accent);color:#000;}
 
 .sec-divider{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);padding:0.6rem 0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;}
+
+/* HEATMAP */
+.hm-box{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;transition:filter 0.15s,transform 0.15s;overflow:hidden;padding:5px 7px;text-align:center;user-select:none;border:1px solid rgba(255,255,255,0.06);}
+.hm-box:hover{filter:brightness(1.3);transform:scale(1.05);z-index:2;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.hm-ticker{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:#fff;line-height:1.2;}
+.hm-pct{font-family:'IBM Plex Mono',monospace;font-size:10px;margin-top:2px;line-height:1;}
+.hm-price{font-size:9px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.hm-sector-header{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);padding:0.5rem 0 0.4rem;width:100%;border-bottom:1px solid var(--border);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.hm-sector-group{margin-bottom:1.5rem;}
+.hm-sector-boxes{display:flex;flex-wrap:wrap;gap:5px;}
+.hm-tab{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:7px 18px;border-radius:999px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+.hm-tab.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.hm-legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem;}
+.hm-leg{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);}
+.hm-leg-dot{width:10px;height:10px;border-radius:2px;}
+.hm-custom-group{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;}
+
+/* CHATBOT */
+.chat-messages{height:420px;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.chat-msg{max-width:88%;padding:10px 14px;border-radius:10px;font-size:0.875rem;line-height:1.65;}
+.chat-msg.user{background:var(--accent);color:#000;align-self:flex-end;border-radius:10px 10px 2px 10px;font-weight:500;}
+.chat-msg.bot{background:var(--bg3);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:10px 10px 10px 2px;}
+.chat-msg.thinking{opacity:0.6;font-style:italic;}
+.chat-input-row{display:flex;gap:8px;padding:0.75rem 1rem;border-top:1px solid var(--border);}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.9rem;color:var(--white);font-family:'Inter',sans-serif;font-size:14px;outline:none;resize:none;min-height:42px;max-height:110px;transition:border 0.15s;line-height:1.5;}
+.chat-input:focus{border-color:var(--accent2);}
+.chat-send-btn{background:var(--accent2);border:none;border-radius:8px;padding:0 1.1rem;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;}
+.chat-send-btn:hover{opacity:0.85;}
+.chat-chip{background:var(--bg3);border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-size:10px;color:var(--muted);cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all 0.15s;white-space:nowrap;}
+.chat-chip:hover{border-color:var(--accent2);color:var(--accent2);}
+@keyframes dots{0%,20%{opacity:0}50%{opacity:1}80%,100%{opacity:0}}
+.typing-dot{animation:dots 1.4s infinite;display:inline-block;}
+.typing-dot:nth-child(2){animation-delay:0.2s;}
+.typing-dot:nth-child(3){animation-delay:0.4s;}
+
+/* TRADINGVIEW */
+.tv-interval-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.tv-interval-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
 </style>
 </head>
 <body>
@@ -280,6 +321,9 @@ setTimeout(function(){
   <div class="nav-section-label" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.25rem;">Mis Anotaciones</div>
   <div class="nav-item" data-target="vi_principios" onclick="go('vi_principios')"><span class="nav-icon" style="color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 21 4"/><path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10"/></svg></span>7 Principios</div>
   <div class="nav-item" data-target="vi_fundamentales" onclick="go('vi_fundamentales')"><span class="nav-icon" style="color:var(--amber)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Análisis Fundamental</div>
+  <div class="nav-section-label" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.25rem;">Mercados</div>
+  <div class="nav-item" data-target="heatmap" onclick="go('heatmap')"><span class="nav-icon" style="color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Heatmap</div>
+  <div class="nav-item" data-target="chatbot" onclick="go('chatbot')"><span class="nav-icon" style="color:var(--accent2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>MarketBot</div>
 </nav>
 
 <div class="page-wrap">
@@ -993,6 +1037,23 @@ setTimeout(function(){
       <div id="hist-insight" style="margin-top:1rem;font-size:0.82rem;color:var(--muted);line-height:1.7;padding:0.75rem 1rem;background:var(--bg2);border-radius:6px;display:none;"></div>
     </div>
 
+    <!-- TRADINGVIEW CHART -->
+    <div id="tv-chart-section" style="display:none;margin-bottom:2rem;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>Gráfico Técnico · TradingView</span>
+        <div style="display:flex;gap:5px;">
+          <button class="tv-interval-btn active" onclick="tvSetInterval('D')" data-int="D">D</button>
+          <button class="tv-interval-btn" onclick="tvSetInterval('W')" data-int="W">W</button>
+          <button class="tv-interval-btn" onclick="tvSetInterval('M')" data-int="M">M</button>
+        </div>
+      </div>
+      <div id="tv-chart-container" style="height:500px;width:100%;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);"></div>
+      <div style="margin-top:0.6rem;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);">Añadir en TV:</span>
+        <span class="tag">SMA 200 diario</span><span class="tag">Williams %R (14) semanal</span><span class="tag">ATR (14) diario</span>
+      </div>
+    </div>
+
     <!-- NOTAS -->
     <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Mis notas sobre esta acción</div>
     <textarea id="stock-notes" placeholder="Escribe tus observaciones aquí... (se guardan automáticamente)" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:1rem;color:var(--text);font-family:'Inter',sans-serif;font-size:0.875rem;line-height:1.7;min-height:100px;outline:none;resize:vertical;transition:border 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="saveNote()" onkeyup="saveNote()"></textarea>
@@ -1367,11 +1428,122 @@ setTimeout(function(){
   </div>
 </section>
 
+<!-- ======================== HEATMAP ======================== -->
+<section id="sec-heatmap" class="section">
+  <div class="sec-eyebrow" style="color:var(--green)">Mercados · TradingView Widget</div>
+  <div class="sec-title">Heatmap de<br>Mercados</div>
+  <p class="sec-desc">Mapa de calor en tiempo real con datos de TradingView. Tamaño por market cap, color por % de cambio. Haz clic en cualquier ticker para ver su gráfico.</p>
+
+  <!-- TABS -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;">
+    <button class="hm-tab active" data-tab="NASDAQ100" onclick="switchHmTab('NASDAQ100')">📊 NASDAQ 100</button>
+    <button class="hm-tab" data-tab="SPX500" onclick="switchHmTab('SPX500')">🏛️ S&P 500</button>
+    <button class="hm-tab" data-tab="DJ30" onclick="switchHmTab('DJ30')">🏦 Dow Jones 30</button>
+    <button class="hm-tab" data-tab="custom" onclick="switchHmTab('custom')" style="border-color:var(--accent2);color:var(--accent2);">✏️ Mi Mapa</button>
+  </div>
+
+  <!-- TV HEATMAP CONTAINER — widgets estáticos pre-renderizados -->
+  <div id="hm-tv-wrap" style="border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);display:block;">
+
+    <!-- NASDAQ 100 -->
+    <div id="hm-NASDAQ100" style="height:620px;width:100%;display:block;">
+      <div class="tradingview-widget-container" style="height:100%;width:100%;">
+        <div class="tradingview-widget-container__widget" style="height:100%;width:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+        {"exchanges":[],"dataSource":"NASDAQ100","grouping":"sector","blockSize":"market_cap_basic","blockColor":"change","locale":"es","colorTheme":"dark","hasTopBar":false,"isDataSetEnabled":false,"isZoomEnabled":true,"hasSymbolTooltip":true,"isMonoSize":false,"width":"100%","height":620}
+        </script>
+      </div>
+    </div>
+
+    <!-- S&P 500 -->
+    <div id="hm-SPX500" style="height:620px;width:100%;display:none;">
+      <div class="tradingview-widget-container" style="height:100%;width:100%;">
+        <div class="tradingview-widget-container__widget" style="height:100%;width:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+        {"exchanges":[],"dataSource":"SPX500","grouping":"sector","blockSize":"market_cap_basic","blockColor":"change","locale":"es","colorTheme":"dark","hasTopBar":false,"isDataSetEnabled":false,"isZoomEnabled":true,"hasSymbolTooltip":true,"isMonoSize":false,"width":"100%","height":620}
+        </script>
+      </div>
+    </div>
+
+    <!-- DOW JONES 30 -->
+    <div id="hm-DJ30" style="height:620px;width:100%;display:none;">
+      <div class="tradingview-widget-container" style="height:100%;width:100%;">
+        <div class="tradingview-widget-container__widget" style="height:100%;width:100%;"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
+        {"exchanges":[],"dataSource":"DJ30","grouping":"sector","blockSize":"market_cap_basic","blockColor":"change","locale":"es","colorTheme":"dark","hasTopBar":false,"isDataSetEnabled":false,"isZoomEnabled":true,"hasSymbolTooltip":true,"isMonoSize":false,"width":"100%","height":620}
+        </script>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CUSTOM BUILDER -->
+  <div id="hm-custom-builder" style="display:none;margin-top:1.5rem;">
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1rem;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--white);margin-bottom:0.5rem;font-size:1rem;">Mi Mapa Personalizado</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Crea grupos de tickers. Los precios se cargan via API desde Yahoo Finance.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
+        <input id="hm-new-group-input" placeholder="Nombre del grupo (ej: Mis Favoritas)" style="flex:1;min-width:180px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.9rem;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;" onkeydown="if(event.key==='Enter')hmAddGroup()">
+        <button onclick="hmAddGroup()" style="background:var(--accent2);border:none;border-radius:6px;padding:0.6rem 1.1rem;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;">+ Nuevo Grupo</button>
+        <button onclick="hmLoadCustomData()" style="background:var(--green);border:none;border-radius:6px;padding:0.6rem 1.1rem;color:#000;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;">↻ Cargar precios</button>
+      </div>
+      <div id="hm-groups-container"></div>
+    </div>
+    <div id="hm-status" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:1rem;"></div>
+    <div id="hm-main"></div>
+  </div>
+</section>
+
+<!-- ======================== CHATBOT ======================== -->
+<section id="sec-chatbot" class="section">
+  <div class="sec-eyebrow" style="color:var(--accent2)">AI · Powered by Groq (100% gratis)</div>
+  <div class="sec-title">Market<span style="color:var(--accent2)">Bot</span></div>
+  <p class="sec-desc">Tu asistente financiero inteligente. Pregunta sobre acciones, indicadores macro, los 7 principios o cualquier concepto de inversión.</p>
+
+  <!-- API KEY PANEL -->
+  <div id="chat-apikey-panel" style="background:var(--bg3);border:1px solid rgba(124,58,237,0.4);border-radius:10px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+    <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:0.4rem;">🔑 API Key — Groq / Gemini (gratis) · OpenAI</div>
+    <p style="font-size:0.82rem;color:var(--muted);line-height:1.7;margin-bottom:0.9rem;">Se detecta automáticamente por el prefijo de la key. Se guarda solo en tu navegador.<br><br><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;"><span style="color:var(--green)">gsk_...</span> → <a href="https://console.groq.com" target="_blank" style="color:var(--accent2);">Groq</a> (gratis · Llama 3.3 70B)<br><span style="color:var(--amber)">AIza...</span> → <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent2);">Google Gemini</a> (gratis · gemini-2.0-flash)<br><span style="color:var(--muted)">sk-...</span> → <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent2);">OpenAI</a> (de pago · gpt-4o-mini)</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input id="chat-apikey-input" type="password" placeholder="gsk_... · AIza... · sk-..." style="flex:1;min-width:240px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:0.65rem 1rem;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;" onkeydown="if(event.key==='Enter')saveApiKey()">
+      <button onclick="saveApiKey()" style="background:var(--accent2);border:none;border-radius:6px;padding:0.65rem 1.25rem;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;">Guardar →</button>
+    </div>
+  </div>
+
+  <!-- CHAT UI -->
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1.25rem;background:var(--bg3);border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);">MarketBot · Groq · Gemini · OpenAI</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="showApiKeyPanel()" style="background:transparent;border:1px solid var(--border);border-radius:4px;padding:3px 10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;">🔑 API Key</button>
+        <button onclick="clearChat()" style="background:transparent;border:1px solid var(--border);border-radius:4px;padding:3px 10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;">✕ Limpiar</button>
+      </div>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+      <div class="chat-msg bot">👋 Soy <strong>MarketBot</strong>. Puedo ayudarte con análisis de acciones aplicando los <strong>7 principios</strong>, explicar indicadores macro como <strong>CPI, FED o NFP</strong>, calcular <strong>Graham Number</strong> y más.<br><br>¿Por dónde empezamos?</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;padding:0.6rem 1rem;border-top:1px solid var(--border);background:var(--bg3);" id="chat-chips"></div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" class="chat-input" placeholder="Pregunta sobre acciones, indicadores, principios..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'"></textarea>
+      <button class="chat-send-btn" onclick="sendChatMessage()">Enviar →</button>
+    </div>
+  </div>
+
+  <!-- QUICK IDEAS -->
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Ideas de preguntas</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;" id="chat-ideas"></div>
+</section>
+
 </div><!-- end page-wrap -->
 
 <script>
 // ===== DATA =====
-const INDICATORS = ['home','watchlist','screener','valuacion','ficha','indicadores','vi_principios','vi_fundamentales'];
+const INDICATORS = ['home','watchlist','screener','valuacion','ficha','indicadores','vi_principios','vi_fundamentales','heatmap','chatbot'];
 
 const SEMAFORO_DATA = [
   {name:'Tasa FED',val:'4.25–4.50%',signal:'neutral',signalLabel:'Restrictivo',pct:75,desc:'Alta pero con expectativa de recortes'},
@@ -1398,7 +1570,7 @@ const QUIZ_DATA = [
 ];
 
 // ===== NAVIGATION =====
-const BC_NAMES = {home:'Inicio',watchlist:'Mi Watchlist',screener:'Screener de Acciones',valuacion:'Valuación de Activo',ficha:'Ficha Técnica',indicadores:'Indicadores Económicos',vi_principios:'7 Principios',vi_fundamentales:'Análisis Fundamental'};
+const BC_NAMES = {home:'Inicio',watchlist:'Mi Watchlist',screener:'Screener de Acciones',valuacion:'Valuación de Activo',ficha:'Ficha Técnica',indicadores:'Indicadores Económicos',vi_principios:'7 Principios',vi_fundamentales:'Análisis Fundamental',heatmap:'Heatmap de Mercados',chatbot:'MarketBot'};
 function go(id){
   document.querySelectorAll('.section, .hero-section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2918,8 +3090,290 @@ function injectFairValueBlock(d) {
 const _origRR = renderResults;
 window.renderResults = function(d) {
   _origRR(d);
-  setTimeout(() => injectFairValueBlock(d), 50);
+  setTimeout(() => {
+    injectFairValueBlock(d);
+    if(d.ticker) loadTVChart(d.ticker, 'D');
+  }, 50);
 };
+
+// ======================== HEATMAP JS (TradingView Widget) ========================
+let hmCurrentTab='NASDAQ100';
+let hmData={};
+let hmLoading=false;
+let hmCustom=JSON.parse(localStorage.getItem('hm_custom')||'{"sectors":{"Mi Grupo 1":[]}}');
+
+// TradingView heatmap widget loader
+function loadTVHeatmap(datasource){
+  const container=document.getElementById('hm-tv-container');
+  if(!container) return;
+  container.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.className='tradingview-widget-container__widget';
+  wrap.style.cssText='height:620px;width:100%;';
+  container.appendChild(wrap);
+  const script=document.createElement('script');
+  script.type='text/javascript';
+  script.src='https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js';
+  script.async=true;
+  script.text=JSON.stringify({
+    exchanges:[],dataSource:datasource,grouping:'sector',
+    blockSize:'market_cap_basic',blockColor:'change',
+    locale:'es',colorTheme:'dark',hasTopBar:false,
+    isDataSetEnabled:false,isZoomEnabled:true,
+    hasSymbolTooltip:true,isMonoSize:false,
+    width:'100%',height:620
+  });
+  container.appendChild(script);
+}
+
+function switchHmTab(tab){
+  hmCurrentTab=tab;
+  document.querySelectorAll('.hm-tab').forEach(b=>{
+    const a=b.dataset.tab===tab;
+    b.style.background=a?'var(--accent)':'var(--bg3)';
+    b.style.borderColor=a?'var(--accent)':'var(--border)';
+    b.style.color=a?'#000':'var(--muted)';
+    b.style.fontWeight=a?'700':'400';
+  });
+  const tvWrap=document.getElementById('hm-tv-wrap');
+  const builder=document.getElementById('hm-custom-builder');
+  if(tab==='custom'){
+    if(tvWrap) tvWrap.style.display='none';
+    if(builder) builder.style.display='block';
+    renderCustomBuilder();
+  }else{
+    if(tvWrap) tvWrap.style.display='block';
+    if(builder) builder.style.display='none';
+    // Show correct pre-rendered widget, hide others
+    ['NASDAQ100','SPX500','DJ30'].forEach(id=>{
+      const el=document.getElementById('hm-'+id);
+      if(el) el.style.display=(id===tab)?'block':'none';
+    });
+  }
+}
+
+document.addEventListener('sectionChanged',function(e){
+  if(e.detail==='heatmap') switchHmTab('NASDAQ100');
+});
+
+// Custom heatmap (Mi Mapa) — usa /batch API
+function hmGetColor(pct){
+  if(pct==null) return '#1e1e2e';
+  if(pct<=-4) return '#6b0000'; if(pct<=-2) return '#8b1a1a';
+  if(pct<=-0.5) return '#b03030'; if(pct<=0) return '#5a2020';
+  if(pct<=0.5) return '#1a4a28'; if(pct<=2) return '#1e6b35';
+  if(pct<=4) return '#1a8a3a'; return '#0d6e2a';
+}
+function hmGetSize(mc){
+  if(!mc) return [85,65]; if(mc>=2e12) return [130,90];
+  if(mc>=5e11) return [110,78]; if(mc>=1e11) return [90,68];
+  if(mc>=2e10) return [75,58]; return [63,50];
+}
+function hmRenderBox(ticker){
+  const d=hmData[ticker];const pct=d?.change_pct;const price=d?.price;
+  const [w,h]=hmGetSize(d?.market_cap);const bg=hmGetColor(pct);
+  const pctTxt=pct!=null?(pct>=0?'+':'')+pct.toFixed(2)+'%':'···';
+  const pctColor=pct==null?'rgba(255,255,255,0.35)':pct>=0?'#9aff9a':'#ffa0a0';
+  const priceStr=price?'$'+(price>=100?price.toFixed(0):price.toFixed(2)):'';
+  return `<div class="hm-box" style="background:${bg};width:${w}px;height:${h}px;"
+    onclick="go('screener');document.getElementById('ticker-input').value='${ticker}';fetchStock();"
+    title="${ticker}${priceStr?' · '+priceStr:''}${pct!=null?' · '+(pct>=0?'+':'')+pct.toFixed(2)+'%':''}">
+    <div class="hm-ticker">${ticker}</div><div class="hm-pct" style="color:${pctColor}">${pctTxt}</div>
+    ${priceStr?`<div class="hm-price">${priceStr}</div>`:''}
+  </div>`;
+}
+function hmRenderAll(){
+  const container=document.getElementById('hm-main');if(!container)return;
+  let html='';
+  for(const [sector,tickers] of Object.entries(hmCustom.sectors)){
+    if(!tickers||!tickers.length) continue;
+    html+=`<div class="hm-sector-group"><div class="hm-sector-header"><span>${sector}</span><span style="font-size:9px;">${tickers.length} valores</span></div><div class="hm-sector-boxes">${tickers.map(t=>hmRenderBox(t)).join('')}</div></div>`;
+  }
+  container.innerHTML=html||'<div style="color:var(--muted);text-align:center;padding:3rem;font-family:\'IBM Plex Mono\',monospace;font-size:11px;">Agrega grupos y tickers arriba ✏️</div>';
+}
+async function hmLoadCustomData(){
+  const allTickers=[...new Set(Object.values(hmCustom.sectors).flat())];
+  if(!allTickers.length){updateHmStatus('Sin tickers');return;}
+  hmLoading=true;
+  const bsz=20;
+  for(let i=0;i<allTickers.length;i+=bsz){
+    const chunk=allTickers.slice(i,i+bsz);
+    updateHmStatus('Cargando '+Math.min(i+bsz,allTickers.length)+'/'+allTickers.length+'...');
+    try{const r=await fetch('/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:chunk}),signal:AbortSignal.timeout(30000)});if(r.ok){Object.assign(hmData,await r.json());hmRenderAll();}}catch(e){}
+  }
+  hmLoading=false;
+  updateHmStatus('Actualizado '+new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'}));
+}
+function updateHmStatus(msg){const el=document.getElementById('hm-status');if(el)el.textContent=msg;}
+function renderCustomBuilder(){
+  const el=document.getElementById('hm-groups-container');if(!el)return;
+  let html='';
+  for(const [grp,tickers] of Object.entries(hmCustom.sectors)){
+    const safeGrp=grp.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const inputId='hmi_'+grp.replace(/[^a-zA-Z0-9]/g,'_');
+    html+=`<div class="hm-custom-group" style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--white);font-size:0.9rem;">${grp}</span>
+        <button onclick="hmRemoveGroup('${safeGrp}')" style="background:transparent;border:1px solid rgba(255,77,109,0.3);border-radius:4px;padding:2px 8px;color:#ff8099;font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;">× Eliminar</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:0.6rem;flex-wrap:wrap;">
+        <input id="${inputId}" placeholder="Ticker (ej: AAPL)" style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:5px 10px;color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none;width:130px;" onkeydown="if(event.key==='Enter')hmAddTicker('${safeGrp}','${inputId}')">
+        <button onclick="hmAddTicker('${safeGrp}','${inputId}')" style="background:var(--accent);border:none;border-radius:5px;padding:5px 12px;color:#000;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;">+</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${tickers.map(t=>`<span style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);display:inline-flex;align-items:center;gap:5px;">${t}<button onclick="hmRemoveTicker('${safeGrp}','${t}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;">×</button></span>`).join('')}
+        ${!tickers.length?'<span style="color:var(--muted);font-size:11px;">Agrega tickers arriba</span>':''}
+      </div>
+    </div>`;
+  }
+  el.innerHTML=html;hmRenderAll();
+}
+function hmAddGroup(){const input=document.getElementById('hm-new-group-input');const name=input.value.trim();if(!name||hmCustom.sectors[name])return;hmCustom.sectors[name]=[];localStorage.setItem('hm_custom',JSON.stringify(hmCustom));input.value='';renderCustomBuilder();}
+function hmRemoveGroup(name){delete hmCustom.sectors[name];localStorage.setItem('hm_custom',JSON.stringify(hmCustom));renderCustomBuilder();}
+function hmAddTicker(group,inputId){const input=document.getElementById(inputId);if(!input)return;const ticker=input.value.trim().toUpperCase();if(!ticker)return;if(!hmCustom.sectors[group])hmCustom.sectors[group]=[];if(!hmCustom.sectors[group].includes(ticker))hmCustom.sectors[group].push(ticker);localStorage.setItem('hm_custom',JSON.stringify(hmCustom));input.value='';renderCustomBuilder();}
+function hmRemoveTicker(group,ticker){if(!hmCustom.sectors[group])return;hmCustom.sectors[group]=hmCustom.sectors[group].filter(t=>t!==ticker);delete hmData[ticker];localStorage.setItem('hm_custom',JSON.stringify(hmCustom));renderCustomBuilder();}
+
+
+
+// ======================== TRADINGVIEW JS ========================
+let tvLibLoaded=false;
+let tvCurrentTicker='';
+let tvCurrentInterval='D';
+
+function loadTVLibrary(){
+  return new Promise((resolve,reject)=>{
+    if(tvLibLoaded){resolve();return;}
+    if(document.getElementById('tv-lib-script')){
+      const wait=setInterval(()=>{if(tvLibLoaded){clearInterval(wait);resolve();}},100);
+      return;
+    }
+    const s=document.createElement('script');
+    s.id='tv-lib-script';
+    s.src='https://s3.tradingview.com/tv.js';
+    s.onload=()=>{tvLibLoaded=true;resolve();};
+    s.onerror=()=>reject(new Error('TradingView no disponible'));
+    document.head.appendChild(s);
+  });
+}
+async function loadTVChart(ticker,interval){
+  tvCurrentTicker=ticker;
+  tvCurrentInterval=interval||'D';
+  const section=document.getElementById('tv-chart-section');
+  const container=document.getElementById('tv-chart-container');
+  if(!section||!container) return;
+  section.style.display='block';
+  container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-family:\'IBM Plex Mono\',monospace;font-size:11px;">Cargando TradingView...</div>';
+  try{
+    await loadTVLibrary();
+    container.innerHTML='';
+    const uid='tv_'+Date.now();
+    const inner=document.createElement('div');
+    inner.id=uid;
+    inner.style.cssText='height:500px;width:100%;';
+    container.appendChild(inner);
+    new TradingView.widget({
+      width: container.offsetWidth || 900,
+      height: 500,
+      symbol: ticker,
+      interval: tvCurrentInterval,
+      timezone: 'America/New_York',
+      theme: 'dark',
+      style: '1',
+      locale: 'es',
+      toolbar_bg: '#111118',
+      enable_publishing: false,
+      allow_symbol_change: true,
+      container_id: uid,
+      backgroundColor: 'rgba(10,10,15,1)',
+      gridColor: 'rgba(255,255,255,0.04)',
+      hide_side_toolbar: false,
+      save_image: false,
+    });
+  }catch(e){
+    container.innerHTML=`<div style="padding:2rem;text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;">Gráfico no disponible: ${e.message}</div>`;
+  }
+}
+function tvSetInterval(interval){
+  document.querySelectorAll('.tv-interval-btn').forEach(b=>b.classList.toggle('active',b.dataset.int===interval));
+  if(tvCurrentTicker) loadTVChart(tvCurrentTicker,interval);
+}
+
+// ======================== CHATBOT JS ========================
+const CHAT_QUICK_PROMPTS=['¿Qué es el Graham Number?','Impacto del CPI alto en la bolsa','¿Cómo uso Williams %R?','¿Qué sectores ganan con FED dovish?','Define soft landing','Analiza NVDA con los 7 principios','¿Qué significa P/E de 50x?','Diferencia SMA vs EMA'];
+let chatMessages=[];
+let chatApiKey=localStorage.getItem('marketbot_apikey')||'';
+let chatBusy=false;
+
+function initChatbot(){
+  const chips=document.getElementById('chat-chips');
+  if(chips&&!chips.dataset.init){chips.dataset.init='1';chips.innerHTML=CHAT_QUICK_PROMPTS.map(p=>`<button class="chat-chip" onclick="chatChip('${p.replace(/'/g,"\\'")}')">${p}</button>`).join('');}
+  const ideas=document.getElementById('chat-ideas');
+  if(ideas&&!ideas.dataset.init){ideas.dataset.init='1';ideas.innerHTML=CHAT_QUICK_PROMPTS.map(p=>`<div onclick="chatChip('${p.replace(/'/g,"\\'")}') " class="glos-item" style="cursor:pointer;"><div class="glos-term" style="font-size:0.85rem;">${p}</div></div>`).join('');}
+  const panel=document.getElementById('chat-apikey-panel');
+  if(panel){
+    panel.style.display=chatApiKey?'none':'block';
+    const inp=document.getElementById('chat-apikey-input');
+    if(inp&&chatApiKey) inp.value=chatApiKey;
+  }
+}
+document.addEventListener('sectionChanged',function(e){if(e.detail==='chatbot')initChatbot();});
+
+function showApiKeyPanel(){const p=document.getElementById('chat-apikey-panel');if(p)p.style.display='block';}
+function saveApiKey(){
+  const key=document.getElementById('chat-apikey-input')?.value.trim();
+  if(!key) return;
+  chatApiKey=key;localStorage.setItem('marketbot_apikey',key);
+  const p=document.getElementById('chat-apikey-panel');if(p)p.style.display='none';
+}
+function appendChatMsg(role,content){
+  const msgs=document.getElementById('chat-messages');
+  if(!msgs) return;
+  const typing=document.getElementById('chat-typing-ind');
+  const div=document.createElement('div');
+  div.className='chat-msg '+role;
+  div.innerHTML=content.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:var(--bg2);padding:1px 5px;border-radius:3px;font-family:\'IBM Plex Mono\',monospace;font-size:0.88em;">$1</code>').replace(/\n/g,'<br>');
+  if(typing&&msgs.contains(typing)) msgs.insertBefore(div,typing);
+  else msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function setTyping(show){
+  const msgs=document.getElementById('chat-messages');if(!msgs)return;
+  let el=document.getElementById('chat-typing-ind');
+  if(show){
+    if(!el){el=document.createElement('div');el.id='chat-typing-ind';el.className='chat-msg bot thinking';el.innerHTML='<span class="typing-dot">●</span> <span class="typing-dot">●</span> <span class="typing-dot">●</span>';}
+    msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;
+  }else{if(el&&msgs.contains(el))msgs.removeChild(el);}
+}
+async function sendChatMessage(){
+  if(chatBusy) return;
+  const input=document.getElementById('chat-input');
+  const text=input?.value.trim();if(!text) return;
+  const key=document.getElementById('chat-apikey-input')?.value.trim()||chatApiKey;
+  if(!key){showApiKeyPanel();return;}
+  chatApiKey=key;localStorage.setItem('marketbot_apikey',key);
+  input.value='';input.style.height='auto';
+  chatMessages.push({role:'user',content:text});
+  appendChatMsg('user',text);setTyping(true);chatBusy=true;
+  try{
+    const r=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatMessages,api_key:key}),signal:AbortSignal.timeout(35000)});
+    const data=await r.json();
+    setTyping(false);chatBusy=false;
+    if(!r.ok){
+      if(data.error==='API_KEY_MISSING'||r.status===401){showApiKeyPanel();appendChatMsg('bot','🔑 API Key inválida. Verifica tu clave.');}
+      else appendChatMsg('bot','⚠️ '+(data.error||'Error'));
+      chatMessages.pop();return;
+    }
+    const reply=data.content;
+    chatMessages.push({role:'assistant',content:reply});
+    appendChatMsg('bot',reply);
+  }catch(e){
+    setTyping(false);chatBusy=false;
+    appendChatMsg('bot','⚠️ Error: '+e.message);
+    chatMessages.pop();
+  }
+}
+function chatChip(text){const inp=document.getElementById('chat-input');if(inp){inp.value=text;sendChatMessage();}}
+function clearChat(){chatMessages=[];const m=document.getElementById('chat-messages');if(m)m.innerHTML='<div class="chat-msg bot">Chat reiniciado 💬 ¿En qué te ayudo?</div>';}
 
 </script>
 </body>
