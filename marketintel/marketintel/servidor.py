@@ -1,15 +1,44 @@
-from flask import Flask, jsonify, send_file
+from flask import Flask, jsonify, send_file, request as flask_request
 from flask_cors import CORS
 import yfinance as yf
 import traceback
 import os
 import math
 
+try:
+    import requests as http_req
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
 app = Flask(__name__)
 CORS(app)
 
+CHATBOT_SYSTEM = """Eres MarketBot, el asistente financiero de MarketIntel. Especializado en value investing y análisis de mercados bursátiles.
+
+Los 7 principios del usuario:
+1. Price Target — upside ≥20% sobre el precio actual
+2. Crecimiento en ventas — mínimo +20% YoY
+3. SMA 200 — precio por debajo de la media = descuento/oportunidad de compra
+4. Conference Call — revisar guidance del CEO, tono y márgenes
+5. P/E Ratio — razonable (<50x trailing)
+6. Beta/Volatilidad — Beta <2.5, ATR manejable
+7. Williams %R — zona de sobreventa en semanal (−80 a −100)
+
+Indicadores macro que conoces: FED rates, CPI, Core PCE, NFP/Desempleo, PIB/GDP, ISM PMI, Confianza del Consumidor.
+Análisis fundamental: EPS (TTM y Forward), P/E, Graham Number (√22.5×EPS×BVPS), Graham formula (EPS×(8.5+2g)), Fair Value (EPS Fwd×15), runway de caja.
+Análisis técnico: SMA/EMA, ATR, Beta, Williams %R, Golden Cross, Death Cross, soporte/resistencia.
+
+Responde siempre en español. Sé conciso pero completo. No des recomendaciones directas de compra/venta — da análisis objetivo y educativo.
+Cuando te pregunten por una acción específica, menciona cuáles de los 7 principios podrían cumplirse o fallar basándote en los datos disponibles."""
+
 def clean(val):
-    """Convierte NaN/Inf a None para JSON valido."""
     if val is None:
         return None
     try:
@@ -30,9 +59,6 @@ def home():
 
 @app.route('/health')
 def health():
-    """Chequeo liviano de conexión — responde al instante, sin tocar yfinance.
-    Sirve para que el frontend sepa si el servidor Flask ya está de pie,
-    sin depender de la velocidad de Yahoo Finance."""
     return jsonify({'status': 'ok'})
 
 @app.route('/stock/<ticker>')
@@ -79,10 +105,6 @@ def get_stock(ticker):
         runway_months = None
         quarterly_burn = None
         try:
-            # Escenario realista (el correcto): Gasto Mensual = OPEX trimestral / 3 meses
-            # Meses de Solvencia = Cash Total / Gasto Mensual
-            # OPEX = Operating Expense (SG&A + R&D), NO 'Total Expenses' (que incluye Cost of Revenue
-            # y da un escenario extremo/pesimista poco realista).
             quarterly_opex = None
             qinc = t.quarterly_income_stmt
             if qinc is not None and not qinc.empty:
@@ -92,7 +114,6 @@ def get_stock(ticker):
                         if len(vals) >= 1:
                             quarterly_opex = float(vals.iloc[0])
                             break
-                # Si no hay fila directa de Operating Expense, sumar R&D + SG&A
                 if quarterly_opex is None:
                     rd_val = 0.0
                     sga_val = 0.0
@@ -110,10 +131,9 @@ def get_stock(ticker):
             if quarterly_opex and quarterly_opex > 0 and total_cash:
                 monthly_opex = quarterly_opex / 3
                 quarterly_burn = quarterly_opex
-                op_expenses = quarterly_opex * 4  # anualizado, solo de referencia
+                op_expenses = quarterly_opex * 4
                 runway_months = round(total_cash / monthly_opex, 1)
 
-            # Fallback: Operating Expense anual (NO Total Expenses) si no hay datos trimestrales
             if runway_months is None:
                 inc = t.income_stmt
                 if inc is not None and not inc.empty:
@@ -128,7 +148,6 @@ def get_stock(ticker):
         except:
             pass
 
-        # --- Fair Value Calculations ---
         graham_number = None
         pe_fair_value = None
         graham_formula = None
@@ -136,16 +155,12 @@ def get_stock(ticker):
         try:
             eps_ttm = info.get('trailingEps')
             eps_fwd = info.get('forwardEps')
-            # Graham Number: sqrt(22.5 × EPS × Book Value per share)
             if book_value and eps_ttm and book_value > 0 and eps_ttm > 0:
                 graham_number = round(math.sqrt(22.5 * eps_ttm * book_value), 2)
-            # Conservative P/E Fair Value: EPS Forward × 15 (Graham's base P/E)
             if eps_fwd and eps_fwd > 0:
                 pe_fair_value = round(eps_fwd * 15, 2)
-            # Modified Graham Formula: EPS × (8.5 + 2g)
-            # where g = estimated growth rate (use revenue growth as proxy)
             if eps_ttm and eps_ttm > 0 and rev_growth is not None:
-                g = min(abs(rev_growth), 50)  # cap growth at 50%
+                g = min(abs(rev_growth), 50)
                 graham_formula = round(eps_ttm * (8.5 + 2 * g), 2)
         except:
             pass
@@ -213,10 +228,8 @@ def get_fundamentals(ticker):
     try:
         ticker = ticker.upper().strip()
         t = yf.Ticker(ticker)
-
         result = {'ticker': ticker, 'eps': [], 'revenue': [], 'margins': [], 'pe_history': []}
 
-        # Quarterly EPS (last 8 quarters)
         try:
             earnings = t.quarterly_earnings
             if earnings is not None and not earnings.empty:
@@ -229,7 +242,6 @@ def get_fundamentals(ticker):
                 result['eps'] = list(reversed(result['eps']))[-8:]
         except: pass
 
-        # Annual Revenue + Margins (last 4 years)
         try:
             fin = t.financials
             if fin is not None and not fin.empty:
@@ -249,7 +261,6 @@ def get_fundamentals(ticker):
                 result['revenue'] = list(reversed(result['revenue']))
         except: pass
 
-        # Quarterly Revenue (last 8 quarters)
         try:
             qfin = t.quarterly_financials
             result['quarterly_revenue'] = []
@@ -263,7 +274,6 @@ def get_fundamentals(ticker):
                         })
         except: pass
 
-        # P/E history from price + EPS (last 5 years annual)
         try:
             hist = t.history(period="5y", interval="3mo")
             info = t.info
@@ -273,21 +283,14 @@ def get_fundamentals(ticker):
                 for date, price in prices.items():
                     pe = round(float(price) / eps_ttm, 1) if eps_ttm > 0 else None
                     if pe and 0 < pe < 500:
-                        result['pe_history'].append({
-                            'period': str(date)[:7],
-                            'pe': pe,
-                            'price': round(float(price), 2)
-                        })
+                        result['pe_history'].append({'period': str(date)[:7], 'pe': pe, 'price': round(float(price), 2)})
                 result['pe_history'] = result['pe_history'][-12:]
         except: pass
 
         def sanitize(obj):
-            if isinstance(obj, dict):
-                return {k: sanitize(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [sanitize(v) for v in obj]
-            elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
-                return None
+            if isinstance(obj, dict): return {k: sanitize(v) for k, v in obj.items()}
+            elif isinstance(obj, list): return [sanitize(v) for v in obj]
+            elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)): return None
             return obj
         result = sanitize(result)
         return jsonify(result)
@@ -302,10 +305,8 @@ def get_financials(ticker):
     try:
         ticker = ticker.upper().strip()
         t = yf.Ticker(ticker)
-
         result = {}
 
-        # Quarterly EPS
         try:
             qe = t.quarterly_earnings
             if qe is not None and not qe.empty:
@@ -317,9 +318,8 @@ def get_financials(ticker):
                 }
         except: pass
 
-        # Annual Income Statement - Revenue, Net Income, EPS, Margins
         try:
-            fin = t.financials  # annual
+            fin = t.financials
             if fin is not None and not fin.empty:
                 cols = list(fin.columns)
                 cols_sorted = sorted(cols)
@@ -334,12 +334,11 @@ def get_financials(ticker):
                 result['annual'] = {'labels': labels, 'revenue': rev, 'net_income': net, 'gross_profit': gross}
         except: pass
 
-        # Quarterly Revenue
         try:
             qfin = t.quarterly_financials
             if qfin is not None and not qfin.empty:
                 cols = list(qfin.columns)
-                cols_sorted = sorted(cols)[-8:]  # last 8 quarters
+                cols_sorted = sorted(cols)[-8:]
                 labels = [str(c.date()) for c in cols_sorted]
                 def get_qrow(name):
                     if name in qfin.index:
@@ -350,7 +349,6 @@ def get_financials(ticker):
                 result['quarterly'] = {'labels': labels, 'revenue': qrev, 'net_income': qnet}
         except: pass
 
-        # P/E history (price / trailing EPS over time using history)
         try:
             hist = t.history(period="2y", interval="1mo")
             info = t.info
@@ -361,7 +359,6 @@ def get_financials(ticker):
                 result['pe_history'] = {'labels': pe_labels, 'pe': pe_vals}
         except: pass
 
-        # Margins over time (annual)
         try:
             fin2 = t.financials
             if fin2 is not None and not fin2.empty:
@@ -377,14 +374,10 @@ def get_financials(ticker):
                 result['margins'] = {'labels': labels, 'net_margin': margins}
         except: pass
 
-        # Sanitize all NaN values before returning
         def sanitize(obj):
-            if isinstance(obj, dict):
-                return {k: sanitize(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [sanitize(v) for v in obj]
-            elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
-                return None
+            if isinstance(obj, dict): return {k: sanitize(v) for k, v in obj.items()}
+            elif isinstance(obj, list): return [sanitize(v) for v in obj]
+            elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)): return None
             return obj
         result = sanitize(result)
         return jsonify(result)
@@ -392,6 +385,168 @@ def get_financials(ticker):
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/batch', methods=['POST'])
+def get_batch():
+    """Endpoint para heatmap: obtiene precio y cambio % de múltiples tickers a la vez."""
+    body = flask_request.get_json(silent=True) or {}
+    raw = body.get('tickers', [])
+    tickers_list = [str(t).upper().strip() for t in raw if str(t).strip()][:60]
+    if not tickers_list:
+        return jsonify({})
+
+    results = {t: {'ticker': t, 'price': None, 'change': None, 'change_pct': None, 'market_cap': None, 'name': t} for t in tickers_list}
+
+    # --- Batch price download via yfinance ---
+    try:
+        joined = ' '.join(tickers_list)
+        df = yf.download(joined, period='5d', progress=False, auto_adjust=True)
+
+        if HAS_PANDAS:
+            is_multi = hasattr(df.columns, 'levels')
+        else:
+            is_multi = False
+
+        def get_closes(ticker_sym):
+            try:
+                if is_multi:
+                    if 'Close' in df.columns.get_level_values(0):
+                        col_df = df['Close']
+                        if hasattr(col_df, 'columns') and ticker_sym in col_df.columns:
+                            return col_df[ticker_sym].dropna()
+                    if ticker_sym in df.columns.get_level_values(0):
+                        return df[ticker_sym]['Close'].dropna()
+                else:
+                    if len(tickers_list) == 1 and 'Close' in df.columns:
+                        return df['Close'].dropna()
+            except:
+                pass
+            return None
+
+        for t in tickers_list:
+            try:
+                closes = get_closes(t)
+                if closes is not None and len(closes) >= 2:
+                    price = float(closes.iloc[-1])
+                    prev  = float(closes.iloc[-2])
+                    if prev > 0:
+                        chg  = round(price - prev, 2)
+                        chgp = round(chg / prev * 100, 2)
+                        results[t].update({'price': round(price, 2), 'change': chg, 'change_pct': chgp})
+            except:
+                pass
+    except:
+        traceback.print_exc()
+
+    # --- Market cap + fallback price via fast_info ---
+    for t in tickers_list[:30]:
+        try:
+            fi = yf.Ticker(t).fast_info
+            mc = getattr(fi, 'market_cap', None)
+            if mc:
+                v = clean(mc)
+                if v is not None:
+                    results[t]['market_cap'] = int(v)
+            if results[t]['price'] is None:
+                lp = getattr(fi, 'last_price', None)
+                pc = getattr(fi, 'previous_close', None)
+                if lp and float(lp) > 0:
+                    p2 = round(float(lp), 2)
+                    results[t]['price'] = p2
+                    if pc and float(pc) > 0:
+                        chg = round(p2 - float(pc), 2)
+                        results[t]['change'] = chg
+                        results[t]['change_pct'] = round(chg / float(pc) * 100, 2)
+        except:
+            pass
+
+    def sanitize(obj):
+        if isinstance(obj, dict): return {k: sanitize(v) for k, v in obj.items()}
+        if isinstance(obj, list): return [sanitize(v) for v in obj]
+        if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)): return None
+        return obj
+
+    return jsonify(sanitize(results))
+
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    """Proxy hacia Groq API (100% gratis) — API Key en console.groq.com"""
+    body = flask_request.get_json(silent=True) or {}
+    messages = body.get('messages', [])
+    api_key = body.get('api_key', '').strip() or os.environ.get('GROQ_API_KEY', '')
+    if not api_key:
+        return jsonify({'error': 'API_KEY_MISSING'}), 400
+    if not messages:
+        return jsonify({'error': 'Sin mensajes'}), 400
+    if not HAS_REQUESTS:
+        return jsonify({'error': 'pip install requests'}), 500
+    full_messages = [{'role': 'system', 'content': CHATBOT_SYSTEM}] + messages[-20:]
+
+    # Auto-detectar proveedor por prefijo de la key
+    # sk-...   → OpenAI  (gpt-4o-mini)
+    # gsk_...  → Groq    (llama-3.3-70b-versatile — gratis)
+    # AIza...  → Google Gemini (gemini-2.0-flash — gratis)
+    if api_key.startswith('sk-'):
+        url   = 'https://api.openai.com/v1/chat/completions'
+        model = 'gpt-4o-mini'
+        try:
+            resp = http_req.post(url,
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                json={'model': model, 'messages': full_messages, 'max_tokens': 1500, 'temperature': 0.7},
+                timeout=30)
+            if not resp.ok:
+                try: err_msg = resp.json().get('error',{}).get('message', f'HTTP {resp.status_code}')
+                except: err_msg = f'HTTP {resp.status_code}'
+                return jsonify({'error': err_msg}), resp.status_code
+            return jsonify({'content': resp.json()['choices'][0]['message']['content']})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    elif api_key.startswith('AIza') or api_key.startswith('AQ.'):
+        # Google Gemini REST API
+        gemini_url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}'
+        # Convertir mensajes al formato Gemini
+        gemini_contents = []
+        for m in messages[-20:]:
+            role = 'user' if m['role'] == 'user' else 'model'
+            gemini_contents.append({'role': role, 'parts': [{'text': m['content']}]})
+        # System prompt como primer turno user/model
+        gemini_payload = {
+            'system_instruction': {'parts': [{'text': CHATBOT_SYSTEM}]},
+            'contents': gemini_contents,
+            'generationConfig': {'maxOutputTokens': 1500, 'temperature': 0.7}
+        }
+        try:
+            resp = http_req.post(gemini_url, json=gemini_payload, timeout=30)
+            if not resp.ok:
+                try: err_msg = resp.json().get('error',{}).get('message', f'HTTP {resp.status_code}')
+                except: err_msg = f'HTTP {resp.status_code}'
+                return jsonify({'error': err_msg}), resp.status_code
+            data = resp.json()
+            text = data['candidates'][0]['content']['parts'][0]['text']
+            return jsonify({'content': text})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    else:
+        # Groq por defecto
+        url = 'https://api.groq.com/openai/v1/chat/completions'
+        model = 'llama-3.3-70b-versatile'
+        try:
+            resp = http_req.post(url,
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                json={'model': model, 'messages': full_messages, 'max_tokens': 1500, 'temperature': 0.7},
+                timeout=30)
+            if not resp.ok:
+                try: err_msg = resp.json().get('error',{}).get('message', f'HTTP {resp.status_code}')
+                except: err_msg = f'HTTP {resp.status_code}'
+                return jsonify({'error': err_msg}), resp.status_code
+            return jsonify({'content': resp.json()['choices'][0]['message']['content']})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
