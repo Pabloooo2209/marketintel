@@ -1,0 +1,7 @@
+flask>=3.0,<4
+flask-cors>=4,<7
+yfinance>=0.2.40,<2
+pandas>=2.2,<4
+requests>=2.31,<3
+python-dotenv>=1,<2
+gunicorn>=22,<24
